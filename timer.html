@@ -1,0 +1,59 @@
+<script>
+    // Helper function to get a cookie value by name
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    // Helper function to set a cookie
+    function setCookie(name, value, days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Define the initial duration: 6 hours and 43 minutes in milliseconds
+        const initialDuration = 6 * 60 * 60 * 1000 + 43 * 60 * 1000;
+
+        // Cookie name for the timer
+        const cookieName = "timer_expiry";
+
+        // Get the current expiry time from the cookie
+        let expiryTime = getCookie(cookieName);
+
+        if (!expiryTime || new Date().getTime() > parseInt(expiryTime)) {
+            // If the cookie doesn't exist or the time has expired, reset the timer
+            expiryTime = new Date().getTime() + initialDuration;
+            setCookie(cookieName, expiryTime, 1); // Set the cookie with a 1-day expiry
+        } else {
+            // If the cookie exists and time hasn't expired, use the stored value
+            expiryTime = parseInt(expiryTime);
+        }
+
+        // Update the timer every second
+        function updateTimer() {
+            const now = new Date().getTime();
+            const remainingTime = expiryTime - now;
+
+            if (remainingTime <= 0) {
+                // Timer expired, reset it
+                expiryTime = new Date().getTime() + initialDuration;
+                setCookie(cookieName, expiryTime, 1); // Update the cookie
+            } else {
+                // Calculate hours, minutes, and seconds
+                const hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
+                const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
+                const seconds = Math.floor((remainingTime / 1000) % 60);
+
+                // Display the time
+                document.getElementById('timer').innerText = `${hours}h ${minutes}m ${seconds}s`;
+            }
+        }
+
+        // Start the timer
+        setInterval(updateTimer, 1000);
+        updateTimer(); // Initial call to display immediately
+    });
+</script>
